@@ -20,11 +20,11 @@ const MESSAGES = {
     return (
       `🤔 No entendí ese formato.\n\n` +
       `Usa alguno de estos:\n\n` +
-      `• @bot lunes 3pm\n` +
-      `• @bot mañana 15:00\n` +
-      `• @bot 22 3pm\n` +
-      `• @bot nov 22 3pm\n` +
-      `• @bot 2025-11-22 15:00`
+      `• @lavanderia lunes 3pm\n` +
+      `• @lavanderia mañana 15:00\n` +
+      `• @lavanderia 22 3pm\n` +
+      `• @lavanderia nov 22 3pm\n` +
+      `• @lavanderia 2025-11-22 15:00`
     );
   },
 

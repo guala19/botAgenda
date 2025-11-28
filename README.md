@@ -1,4 +1,4 @@
-# 🚀 Bot Agenda Lavandería
+
 
 WhatsApp bot para reservas de lavandería. Automatiza scheduling con verificación de disponibilidad y almacenamiento en Google Sheets.
 

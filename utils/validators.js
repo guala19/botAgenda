@@ -132,10 +132,10 @@ function isValidMessage(message) {
  * Verifica si el mensaje contiene mención del bot
  * 
  * @param {string} message - Mensaje a verificar
- * @param {string} botMention - Mención del bot (default: @bot)
+ * @param {string} botMention - Mención del bot (default: @lavanderia)
  * @returns {boolean} - true si contiene mención
  */
-function hasBotMention(message, botMention = '@bot') {
+function hasBotMention(message, botMention = '@lavanderia') {
   if (!message || typeof message !== 'string') {
     return false;
   }

@@ -4,7 +4,7 @@
  * Bot de WhatsApp para Gestión de Reservas de Lavandería
  * 
  * Funcionalidades principales:
- * - Escucha mensajes con mención @bot (o privados para pruebas)
+ * - Escucha mensajes con mención @lavanderia (o privados para pruebas)
  * - Parsea fecha/hora usando lenguaje natural en español
  * - Valida disponibilidad de horarios en Google Sheets
  * - Registra nuevas reservas
@@ -12,7 +12,7 @@
  * 
  * Flujo:
  * 1. Bot se inicia y genera QR para escanear
- * 2. Mensaje entra → Verifica si contiene @bot o es privado
+ * 2. Mensaje entra → Verifica si contiene @lavanderia o es privado
  * 3. Si sí, parsea la fecha/hora
  * 4. Verifica disponibilidad en Sheets
  * 5. Agrega reserva o responde con motivo de fallo
@@ -85,7 +85,7 @@ client.on('qr', (qr) => {
  */
 client.on('ready', async () => {
   console.log('\n✅ Bot conectado y listo');
-  console.log('📋 Esperando mensajes con @bot o en chats privados...\n');
+  console.log('📋 Esperando mensajes con @lavanderia o en chats privados...\n');
 
   // Intentar inicializar Google Sheets (sin bloquear si falla)
   setImmediate(async () => {
@@ -120,7 +120,7 @@ client.on('disconnected', (reason) => {
  * 
  * ✅ FUNCIONA EN GRUPOS Y PRIVADOS
  * 
- * EN GRUPOS: Procesa mensajes que contengan @bot
+ * EN GRUPOS: Procesa mensajes que contengan @lavanderia
  * EN PRIVADOS: Procesa todos los mensajes
  * 
  * Flujo:
@@ -181,12 +181,12 @@ client.on('message_create', async (msg) => {
     const allowedGroupName = process.env.ALLOWED_GROUP_NAME || 'botTest';
     const isAllowedGroup = groupName.toLowerCase().includes(allowedGroupName.toLowerCase());
 
-    console.log(`[DEBUG] Mensaje recibido: "${messageText}" | Grupo: ${isGroupChat} (${groupName}) | @bot: ${isBotMentioned} | Permitido: ${isAllowedGroup}`);
+    console.log(`[DEBUG] Mensaje recibido: "${messageText}" | Grupo: ${isGroupChat} (${groupName}) | @lavanderia: ${isBotMentioned} | Permitido: ${isAllowedGroup}`);
 
     // PASO 1: FILTRO PRINCIPAL - Solo procesar si es el grupo permitido
     // Ignorar COMPLETAMENTE mensajes privados y otros grupos
     if (!isGroupChat || !isAllowedGroup || !isBotMentioned) {
-      console.log(`[DEBUG] ❌ Mensaje ignorado - Solo funciono en grupo "${allowedGroupName}" con @bot`);
+      console.log(`[DEBUG] ❌ Mensaje ignorado - Solo funciono en grupo "${allowedGroupName}" con @lavanderia`);
       return; // Ignorar silenciosamente SIN responder
     }
 

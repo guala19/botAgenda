@@ -28,7 +28,7 @@ function normalizeHourFormat(text) {
 /**
  * Limpia el mensaje removiendo la mención del bot
  */
-function cleanMessage(text, botMention = '@bot') {
+function cleanMessage(text, botMention = '@lavanderia') {
   return text.replace(new RegExp(botMention, 'gi'), '').trim();
 }
 
@@ -288,7 +288,7 @@ function parseFormat5(text) {
 /**
  * FUNCIÓN PRINCIPAL - Parsea el mensaje
  */
-function parseMessageForDateTime(messageText, botMention = '@bot') {
+function parseMessageForDateTime(messageText, botMention = '@lavanderia') {
   try {
     const cleanedText = cleanMessage(messageText, botMention).trim();
     
