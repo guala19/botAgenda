@@ -142,22 +142,30 @@ client.on('message_create', async (msg) => {
     const fromNumber = msg.from.replace('@c.us', ''); // Limpiar formato de WhatsApp
     const isBotMentioned = messageText.toLowerCase().includes(BOT_CONFIG.botMention);
     
-    // Obtener nombre del contacto real
-    let userName = 'Usuario';
-    try {
-      const contact = await msg.getContact();
-      userName = contact.name || contact.pushname || 'Usuario';
-    } catch (e) {
-      // Si no se puede obtener, usar nombre por defecto
-    }
-    
     // NUEVO: Extraer nombre si viene en formato "@lavanderia mañana 3pm - Juan"
     const nameMatch = messageText.match(/\s+-\s+(.+)$/);
+    let userName = null;
+    
     if (nameMatch) {
       const extractedName = nameMatch[1].trim();
       if (extractedName.length > 0) {
         userName = extractedName;
       }
+    }
+    
+    // Si no tiene nombre, rechazar el mensaje
+    if (!userName) {
+      // Extraer la parte de fecha/hora para sugerir el formato correcto
+      const messageWithoutMention = messageText.replace(/@lavanderia\s*/i, '').trim();
+      console.log(`[DEBUG] ❌ Nombre faltante en mensaje: "${messageText}"`);
+      await msg.reply(
+        `⚠️ **Falta tu nombre**\n\n` +
+        `Vuelve a escribir así:\n\n` +
+        `${messageWithoutMention} - Tu Nombre\n\n` +
+        `Ejemplo:\n` +
+        `@lavanderia mañana 3pm - Juan`
+      );
+      return;
     }
     
     // Detectar si es grupo o privado (más confiable)
