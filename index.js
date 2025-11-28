@@ -20,9 +20,6 @@
 
 const { Client, MessageMedia, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
-const QRCode = require('qrcode');
-const fs = require('fs');
-const path = require('path');
 const dotenv = require('dotenv');
 const dateParser = require('./services/dateParser');
 const sheetManager = require('./services/sheetManager');
@@ -60,33 +57,19 @@ const client = new Client({
 
 /**
  * Evento: QR generado (primera inicialización)
- * Guarda QR como archivo PNG para poder escanearlo desde Railway logs
- * También lo muestra en terminal (para desarrollo local)
+ * Muestra QR en ASCII en los logs para que sea fácil de escanear desde Railway
  */
-client.on('qr', async (qr) => {
-  console.log('\n🔐 Generando código QR para autenticación...');
-  
-  // Mostrar en terminal (para desarrollo local)
+client.on('qr', (qr) => {
+  console.log('\n' + '='.repeat(70));
+  console.log('📱 CÓDIGO QR - ESCANEA CON TU TELÉFONO');
+  console.log('='.repeat(70));
+  console.log('\n🔐 Abre WhatsApp en tu teléfono y ve a:');
+  console.log('   Menú → Dispositivos vinculados → Nuevo dispositivo');
+  console.log('\n📸 Escanea este código QR:\n');
   qrcode.generate(qr, { small: true });
-  
-  // Guardar como archivo PNG (para Railway)
-  try {
-    const qrPath = path.join(__dirname, 'qr.png');
-    await QRCode.toFile(qrPath, qr, {
-      errorCorrectionLevel: 'H',
-      type: 'image/png',
-      width: 300,
-      margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      }
-    });
-    console.log(`✅ QR guardado en: ${qrPath}`);
-    console.log('📱 En Railway: Descarga el archivo qr.png de los logs/archivos\n');
-  } catch (error) {
-    console.error('❌ Error guardando QR:', error.message);
-  }
+  console.log('\n' + '='.repeat(70));
+  console.log('⏱️  Si no funciona, actualiza la página en Railway después de 30 segundos');
+  console.log('='.repeat(70) + '\n');
 });
 
 /**

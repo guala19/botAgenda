@@ -131,41 +131,44 @@ Si ves errores de credenciales, revisa que `GOOGLE_SERVICE_ACCOUNT_JSON` esté c
 
 ## 📱 Paso 4: Autenticar el Bot (Primer Deploy)
 
-### Problema: QR no visible en Railway
-
-En Railway no puedes ver terminal interactivo. Por eso el bot guarda el QR como archivo `qr.png`.
-
-### Solución: Obtener el QR
+### ✅ El proceso es muy simple ahora:
 
 1. **En Railway Dashboard:**
    - Ve a tu proyecto
    - Click en **"Logs"** (tab)
-   - Busca el mensaje: `✅ QR guardado en: /app/qr.png`
+   - El bot mostrará el QR en **ASCII** directamente en los logs
 
-2. **Descargar el archivo QR:**
-   - En los logs de Railway, busca el archivo `qr.png`
-   - Haz click para descargarlo o ver la URL pública
-   - Alternativamente, Railway puede mostrarlo en los archivos generados
+2. **El QR aparecerá así en los logs:**
+   ```
+   ======================================================================
+   📱 CÓDIGO QR - ESCANEA CON TU TELÉFONO
+   ======================================================================
+   
+   🔐 Abre WhatsApp en tu teléfono y ve a:
+      Menú → Dispositivos vinculados → Nuevo dispositivo
+   
+   📸 Escanea este código QR:
+   
+   [QR CODE EN ASCII]
+   
+   ======================================================================
+   ```
 
-3. **Escanear el QR:**
+3. **Escanea el QR directamente desde los logs:**
    - Abre WhatsApp en tu teléfono
-   - Linked Devices (dispositivos vinculados)
+   - Menú → Dispositivos vinculados
    - Nuevo dispositivo
-   - Escanea el QR descargado
+   - Apunta la cámara a la pantalla (donde ves los logs)
+   - ¡Listo! Se conecta en 2-3 segundos
 
 4. **Una vez autenticado:**
-   - Railway guardará la sesión en `.wwebjs_auth/`
-   - Los siguientes redeployments NO necesitarán nuevo QR
-   - El bot se reconectará automáticamente
+   - La sesión se guarda automáticamente
+   - Los siguientes redeployments NO necesitan nuevo QR
+   - El bot se reconecta automáticamente
 
-### Si algo falla:
+---
 
-```
-Si el QR no aparece en los logs:
-- Espera 2-3 minutos para que se genere
-- Revisa que NODE_ENV=production en Railway
-- Intenta Force Redeploy
-```
+**¡Mucho más fácil!** ✨ Sin descargas, sin links, directo desde los logs.
 
 ## 📱 Paso 4: Probar el Bot
 
@@ -247,6 +250,12 @@ Railway → Dashboard → Resource Usage
 - ✅ **SOLUCIONADO:** El Dockerfile incluido instala todas las librerías
 - Railway auto-detecta Dockerfile y lo usa
 - Si aún falla: Reconstruir en Railway → Settings → Redeploy
+
+### No veo el QR en los logs
+- [ ] Espera 1-2 minutos a que se genere
+- [ ] Refresca la página de logs en Railway (F5)
+- [ ] Verifica que el bot esté corriendo (status debe ser "running")
+- [ ] Si aún no aparece, intenta Force Redeploy
 
 ## 📞 Support
 
