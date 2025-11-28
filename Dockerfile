@@ -1,43 +1,25 @@
 FROM node:18-bullseye
 
-# Instalar dependencias de sistema para Puppeteer/Chromium
+# Instalar dependencias mínimas para Puppeteer/Chromium en Linux
+# Basado en: https://github.com/puppeteer/puppeteer/blob/main/docker/Dockerfile
 RUN apt-get update && apt-get install -y \
-    gconf-service \
-    libgbm1 \
-    libgconf-2-4 \
-    libgbm-dev \
-    libgconf-full-dev \
-    libgtk-3-0 \
-    libxss1 \
-    libxss-dev \
-    fonts-liberation \
-    libappindicator1 \
-    libappindicator3-1 \
-    libindicator7 \
-    lsb-release \
-    xdg-utils \
-    wget \
     libnss3 \
-    libnss3-dev \
-    libdbus-1-dev \
-    libgconf-2-4 \
-    libgconf-full-dev \
+    libnspr4 \
+    libdbus-1-3 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
     libxrandr2 \
-    libxrandr-dev \
-    libxinerama1 \
-    libxinerama-dev \
-    libxi6 \
-    libxi-dev \
-    libxcursor1 \
-    libxcursor-dev \
-    libxtst6 \
-    libxtst-dev \
-    libc6 \
-    ca-certificates \
-    fonts-dejavu-core \
-    fontconfig \
+    libgbm1 \
     libpango-1.0-0 \
-    libpango-1.0-common \
+    libcairo2 \
+    libasound2 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -45,7 +27,7 @@ WORKDIR /app
 # Copiar package files
 COPY package*.json ./
 
-# Instalar dependencias Node
+# Instalar dependencias Node (sin dev)
 RUN npm ci --omit=dev
 
 # Copiar código fuente
@@ -56,3 +38,4 @@ EXPOSE 3000
 
 # Iniciar bot
 CMD ["npm", "start"]
+
