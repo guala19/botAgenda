@@ -155,15 +155,11 @@ client.on('message_create', async (msg) => {
     
     // Si no tiene nombre, rechazar el mensaje
     if (!userName) {
-      // Extraer la parte de fecha/hora para sugerir el formato correcto
-      const messageWithoutMention = messageText.replace(/@lavanderia\s*/i, '').trim();
       console.log(`[DEBUG] ❌ Nombre faltante en mensaje: "${messageText}"`);
       await msg.reply(
         `⚠️ **Falta tu nombre**\n\n` +
         `Vuelve a escribir así:\n\n` +
-        `${messageWithoutMention} - Tu Nombre\n\n` +
-        `Ejemplo:\n` +
-        `@lavanderia mañana 3pm - Juan`
+        `@lavanderia mañana 3pm - Tu Nombre`
       );
       return;
     }
