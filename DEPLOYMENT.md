@@ -107,6 +107,16 @@ Railway → Tu Proyecto → Deploy (botón)
 
 O simplemente haz push a GitHub en rama `main` y Railway redeploya automáticamente.
 
+**⚠️ IMPORTANTE - Si es tu PRIMER deploy o añadiste Dockerfile:**
+
+1. En Railway Dashboard, ve a tu proyecto
+2. Click en **"Settings"** (rueda arriba a la derecha)
+3. Busca **"Redeploy"** o **"Force Redeploy"**
+4. Click para forzar rebuild con el Dockerfile
+5. Espera a que termine (5-10 minutos)
+
+Esto asegura que Railway instale todas las librerías necesarias para Puppeteer.
+
 ### Verificar que funciona:
 
 1. Ve a **Logs** en Railway dashboard
