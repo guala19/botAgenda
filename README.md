@@ -9,10 +9,12 @@ WhatsApp bot para reservas de lavandería. Automatiza scheduling con verificaci�
 - ✅ Almacenamiento persistente en Google Sheets
 - ✅ Auto-limpieza (14 días de retención)
 - ✅ 5 formatos de entrada simples y predecibles
+- ✅ Horarios de operación 9 AM - 8 PM
+- ✅ Funciona 24/7 con Railway
 
 ## 📋 Cómo Reservar
 
-Usa UNO de estos 5 formatos. El bot responde con confirmación y próximos horarios disponibles:
+Usa UNO de estos 5 formatos. El bot responde con confirmación:
 
 ```
 1️⃣  @bot lunes 3pm              → Próximo lunes a las 3 PM
@@ -23,61 +25,144 @@ Usa UNO de estos 5 formatos. El bot responde con confirmación y próximos horar
 5️⃣  @bot 22 3pm                → Día 22 del mes actual
 ```
 
-**Ejemplo:** Si escribes `@bot viernes 4pm`, el bot:
-1. Detecta: viernes a las 4 PM (próximo viernes)
-2. Verifica disponibilidad (¿hay lavadora libre 4-5 PM?)
-3. Guarda en Google Sheets con teléfono y timestamp
-4. Responde: `✅ Reserva confirmada: viernes 22/11 a las 16:00`
+## 🔐 Configuración (`.env`)
 
-## 🔧 Instalación
+### Variables Requeridas
+
+```env
+# Información del grupo WhatsApp
+OWNER_PHONE=56965849477                    # Tu número
+ALLOWED_GROUP_NAME=botTest                 # Nombre EXACTO del grupo
+BOT_MENTION=@bot                           # Trigger para activar
+
+# Google Sheets (obtener de URL y credenciales)
+GOOGLE_SHEETS_ID=1Rx4uRjqhD4Vqu9BGyB...   # De la URL del Sheet
+GOOGLE_SERVICE_ACCOUNT_EMAIL=...@iam...   # Del archivo JSON
+
+# Google Service Account (NUNCA commitear a GitHub)
+# OPCIÓN 1: Para Railway/Docker/Producción
+#   → Pegar el JSON completo como string (sin saltos de línea)
+GOOGLE_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
+
+# OPCIÓN 2: Para desarrollo local
+#   → Ruta al archivo JSON
+# GOOGLE_SERVICE_ACCOUNT_JSON=./botagenda-478614-e2daa61b626a.json
+```
+
+**Nunca commitear a GitHub** - archivo `.env` está en `.gitignore`.
+
+## 🚀 Despliegue en Railway (Recomendado)
+
+### Paso 1: Conectar GitHub
+```
+1. Ir a railway.app
+2. Click "New Project" → "Deploy from GitHub"
+3. Autorizar y seleccionar repo: guala19/botAgenda
+4. Railway auto-detecta package.json
+```
+
+### Paso 2: Agregar Variables de Entorno
+En **Railway Dashboard → Variables**:
+
+```
+OWNER_PHONE=56965849477
+ALLOWED_GROUP_NAME=botTest
+BOT_MENTION=@bot
+GOOGLE_SHEETS_ID=1Rx4uRjqhD4Vqu9BGyBjtcMHHTCQ_JMl_L3XdH8lswTE
+GOOGLE_SERVICE_ACCOUNT_EMAIL=residencia167@botagenda-478614.iam.gserviceaccount.com
+GOOGLE_SERVICE_ACCOUNT_JSON=(pegar JSON completo sin saltos)
+TIMEZONE=America/Argentina/Buenos_Aires
+NODE_ENV=production
+LOG_LEVEL=info
+```
+
+**Para `GOOGLE_SERVICE_ACCOUNT_JSON`:**
+- Abre archivo JSON de credenciales
+- Copia TODO desde `{` hasta `}`
+- Pégalo en Railway
+
+### Paso 3: Desplegar
+- Railway auto-redeploya en cada push a `main`
+- El bot corre 24/7 sin hibernación
+- Auto-reinicia si falla
+
+### Costos
+- **Free Trial:** $5 de crédito (≈30-50 días)
+- **Hobby Plan:** $5/mes (cubre consumo del bot)
+- El bot consume ~$0.10-0.15/día
+
+## 💻 Desarrollo Local
 
 ```bash
 # Instalar dependencias
 npm install
 
-# Copiar configuración
+# Configurar .env
 cp .env.example .env
 
-# Editar .env con credenciales Google Cloud
-# Asignar ALLOWED_GROUP_NAME al nombre exacto del grupo WhatsApp
+# Editar .env con credenciales locales
+# GOOGLE_SERVICE_ACCOUNT_JSON=./botagenda-478614-e2daa61b626a.json
 
-# Iniciar bot
+# Iniciar
 npm start
 ```
 
-El bot mostrará un **código QR** en terminal. Escanea con WhatsApp para autenticar.
+El bot muestra QR en terminal → escanea con WhatsApp.
 
-## 🔐 Configuración (`.env`)
+## 🔒 Seguridad
 
-```env
-# Google Cloud (Service Account)
-GOOGLE_SHEETS_ID=tu_id_aqui
-GOOGLE_SERVICE_ACCOUNT_JSON=./credenciales.json
-GOOGLE_SERVICE_ACCOUNT_EMAIL=tu_email@botagenda.iam.gserviceaccount.com
-
-# Bot settings
-ALLOWED_GROUP_NAME=botTest           # Nombre exacto del grupo WhatsApp
-TIMEZONE=America/Argentina/Buenos_Aires
-BOT_MENTION=@bot
-
-# Logging
-LOG_LEVEL=info
-NODE_ENV=development
+### Lo que NUNCA debe ir a GitHub
+```
+❌ .env (credenciales reales)
+❌ *.json (credenciales)
+❌ .wwebjs_auth/ (sesión)
+❌ .wwebjs_cache/ (cache)
 ```
 
-## 📁 Estructura del Código
+Estos están excluidos en `.gitignore` automáticamente.
+
+### Lo que SÍ puede ir
+```
+✅ .env.example (plantilla)
+✅ credentials.example.json (template)
+✅ código fuente
+✅ package.json
+```
+
+El código ya lee credenciales de variables de entorno, así es seguro para production.
+
+## 🧪 Testing
+
+```bash
+# Prueba formato de fechas
+node test-regex.js
+
+# Salida esperada:
+# Input: 'hoy a las 22 horas'
+# Valid: YES
+#   Hora: 22:00, Fecha: 2025-11-27
+```
+
+## 📊 Operación
+
+- **Horarios:** 9:00 AM - 8:00 PM
+- **Duración:** 1 hora por reserva
+- **Auto-limpieza:** Cada 2 horas (reservas >14 días)
+- **Uptime:** 24/7 con Railway
+
+## 📁 Estructura
 
 ```
 botAgenda/
-├── index.js                 → 🎯 Orquestador principal bot
+├── index.js                 → Orquestador principal
 ├── services/
-│   ├── dateParser.js       → Parsea 5 formatos específicos
-│   └── sheetManager.js     → Google Sheets CRUD + disponibilidad
+│   ├── dateParser.js       → Parsea 5 formatos
+│   └── sheetManager.js     → Google Sheets + disponibilidad
 ├── utils/
-│   ├── logger.js           → Logging con colores
-│   ├── responses.js        → Mensajes predefinidos bot
-│   └── validators.js       → Validaciones de entrada
-├── .env                     → Configuración (gitignored)
+│   ├── logger.js           → Logging
+│   ├── responses.js        → Mensajes del bot
+│   └── validators.js       → Validaciones
+├── .env.example            → Plantilla (nunca commitear .env)
 └── package.json            → Dependencias
 ```
 
@@ -86,60 +171,25 @@ botAgenda/
 ```
 Usuario: "@bot viernes 3pm"
             ↓
-[index.js] → Valida que sea en grupo autorizado
+[index.js] → Valida grupo autorizado
             ↓
-[dateParser.js] → Detecta "viernes 3pm"
-                → Calcula próximo viernes 15:00
+[dateParser] → Detecta "viernes 3pm"
+             → Calcula próximo viernes 15:00
             ↓
-[sheetManager.js] → isTimeSlotAvailable()
-                  → Revisa si 15:00-16:00 está libre
-            ↓
-Si disponible: Guarda en Sheet → ✅ Confirmación
-Si no: Sugiere próximo horario → ⏳ Intenta otro
+[sheetManager] → ¿Está libre 15:00-16:00?
+               ↓
+Sí: Guarda → ✅ Confirmación
+No: Sugiere → ⏳ Próximo disponible
 ```
-
-## ⚙️ Stack Tecnológico
-
-| Componente | Librería | Uso |
-|---|---|---|
-| Cliente WhatsApp | whatsapp-web.js | Conexión a WhatsApp Web |
-| Parser de horas | chrono-node | Parsea solo el horario (HH:MM) |
-| Google Sheets | google-spreadsheet | Persistencia de datos |
-| Autenticación | google-auth-library | JWT Service Account |
-| Configuración | dotenv | Variables de entorno |
-
-## 🧪 Testing Manual
-
-1. Agregate al grupo "botTest"
-2. Verifica `.env` apunta a Google Sheet compartida
-3. Ejecuta `npm start` - deberías ver QR
-4. Escanea QR con WhatsApp
-5. Prueba: `@bot mañana 3pm`
-6. Verifica que aparezca en Google Sheets
 
 ## 🐛 Troubleshooting
 
 | Problema | Solución |
 |----------|----------|
-| Bot no responde | Verificar que estés en grupo "botTest" |
-| "No entendí el formato" | Usar uno de los 5 formatos válidos |
-| No se guarda en Sheet | Revisar credenciales en .env |
-| QR no aparece | Eliminar carpeta `.wwebjs_auth` |
-
-## 📊 Google Sheet
-
-**Columnas automáticas:**
-- Usuario, Teléfono, Fecha, Hora, ISO Date, Timestamp
-
-**Auto-cleanup:** Borra reservas > 14 días cada 2 horas
-
-## 👨‍💻 Para Developers
-
-**Agregar nuevo formato:** Edita `services/dateParser.js`, agrega función `parseFormat6()`
-
-**Cambiar duración lavada:** `services/sheetManager.js` línea ~150, variable `washDuration`
-
-**Modificar intervalo limpieza:** `services/sheetManager.js` línea ~290, `setInterval()`
+| Bot no responde | Verifica estés en grupo "botTest" |
+| "No entendí formato" | Usa uno de los 5 formatos válidos |
+| No guarda en Sheet | Revisa credenciales en .env |
+| QR no aparece | Elimina `.wwebjs_auth/` |
 
 ---
 
