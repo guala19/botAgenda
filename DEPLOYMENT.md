@@ -31,6 +31,12 @@ Google Cloud Console
 - Copia el ID de la URL: `docs.google.com/spreadsheets/d/{ID}/edit`
 - Comparte la hoja con el email del Service Account (ej: `residencia167@botagenda-478614.iam.gserviceaccount.com`)
 
+### 1.3 Dockerfile
+
+El repositorio incluye un `Dockerfile` personalizado que instala las librerías necesarias para Puppeteer/Chromium en Linux.
+
+**Railway detecta automáticamente el Dockerfile y lo usa.** No necesitas hacer nada especial.
+
 ## 🔑 Paso 2: Configurar Railway
 
 ### 2.1 Crear Proyecto en Railway
@@ -187,6 +193,12 @@ Railway → Dashboard → Resource Usage
 - [ ] Todos los `process.env.VARIABLE` tienen valor en Railway?
 - [ ] Revisa los logs en Railway dashboard
 - [ ] Verifica que `NODE_ENV=production`
+- [ ] ✅ Railway usa Dockerfile personalizado (incluido en repo)
+
+### "libgobject-2.0.so.0: cannot open shared object file"
+- ✅ **SOLUCIONADO:** El Dockerfile incluido instala todas las librerías
+- Railway auto-detecta Dockerfile y lo usa
+- Si aún falla: Reconstruir en Railway → Settings → Redeploy
 
 ## 📞 Support
 

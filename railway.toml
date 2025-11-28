@@ -1,0 +1,7 @@
+[build]
+# Usar Dockerfile personalizado en lugar de detección automática
+dockerfile = "Dockerfile"
+
+[deploy]
+# Puerto donde escucha la aplicación (aunque el bot no usa puerto HTTP)
+port = 3000
