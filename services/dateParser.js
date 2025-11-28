@@ -59,8 +59,7 @@ function formatDateToSpanish(date) {
     month: 'long',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'America/Argentina/Buenos_Aires'
+    minute: '2-digit'
   };
   return new Intl.DateTimeFormat('es-ES', options).format(date);
 }
