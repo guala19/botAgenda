@@ -31,7 +31,7 @@ dotenv.config();
  * Configuración global del bot
  */
 const BOT_CONFIG = {
-  botMention: '@bot', // Mención para activar el bot
+  botMention: '@lavanderia', // Mención para activar el bot
   ownerPhone: process.env.OWNER_PHONE, // Tu número para mensajes privados de prueba
   responseTimeout: 5000, // ms para esperar respuesta de Sheets
   timezone: 'America/Argentina/Buenos_Aires' // Ajustar según tu zona
@@ -143,12 +143,21 @@ client.on('message_create', async (msg) => {
     const isBotMentioned = messageText.toLowerCase().includes(BOT_CONFIG.botMention);
     
     // Obtener nombre del contacto real
-    let userName = 'Usuario WhatsApp';
+    let userName = 'Usuario';
     try {
       const contact = await msg.getContact();
-      userName = contact.name || contact.pushname || 'Usuario WhatsApp';
+      userName = contact.name || contact.pushname || 'Usuario';
     } catch (e) {
       // Si no se puede obtener, usar nombre por defecto
+    }
+    
+    // NUEVO: Extraer nombre si viene en formato "@lavanderia mañana 3pm - Juan"
+    const nameMatch = messageText.match(/\s+-\s+(.+)$/);
+    if (nameMatch) {
+      const extractedName = nameMatch[1].trim();
+      if (extractedName.length > 0) {
+        userName = extractedName;
+      }
     }
     
     // Detectar si es grupo o privado (más confiable)
@@ -180,7 +189,7 @@ client.on('message_create', async (msg) => {
     console.log(`[DEBUG] ✅ Procesando mensaje del grupo permitido...`);
 
     // COMANDO ESPECIAL: Mostrar horario ocupado de un día
-    const horarioMatch = messageText.match(/@bot\s+horario\s+(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)/i);
+    const horarioMatch = messageText.match(/@lavanderia\s+horario\s+(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)/i);
     if (horarioMatch) {
       const dayName = horarioMatch[1].toLowerCase().replace(/á/g, 'a').replace(/é/g, 'e');
       const ocupiedHours = await sheetManager.getOccupiedHours(dayName);
@@ -213,11 +222,12 @@ client.on('message_create', async (msg) => {
       await msg.reply(
         `🤔 No entendí ese formato.\n\n` +
         `Usa alguno de estos:\n\n` +
-        `• @bot lunes 3pm\n` +
-        `• @bot mañana 15:00\n` +
-        `• @bot 22 3pm\n` +
-        `• @bot nov 22 3pm\n` +
-        `• @bot 2025-11-22 15:00`
+        `• @lavanderia mañana 3pm\n` +
+        `• @lavanderia viernes 5pm - Juan\n` +
+        `• @lavanderia 22 3pm\n` +
+        `• @lavanderia nov 22 3pm\n` +
+        `• @lavanderia 2025-11-22 15:00\n\n` +
+        `Opcional: agrega tu nombre con " - Nombre" al final`
       );
       return;
     }
