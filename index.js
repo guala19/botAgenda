@@ -184,16 +184,14 @@ client.on('message_create', async (msg) => {
     if (horarioMatch) {
       const dayName = horarioMatch[1].toLowerCase().replace(/á/g, 'a').replace(/é/g, 'e');
       const ocupiedHours = await sheetManager.getOccupiedHours(dayName);
-      let response = `📅 **Horario de ${dayName.charAt(0).toUpperCase() + dayName.slice(1)}**\n\n`;
-      response += `Horario de operación: 9:00 AM - 8:00 PM\n`;
-      response += `Duración por lavada: 1 hora\n\n`;
+      let response = `📅 **${dayName.charAt(0).toUpperCase() + dayName.slice(1)}**\n\n`;
       
       if (ocupiedHours.length === 0) {
-        response += `✅ **Libre**: Todos los horarios disponibles`;
+        response += `✅ Todo disponible`;
       } else {
-        response += `🔴 **Ocupado**:\n`;
+        response += `🔴 Ocupado:\n`;
         ocupiedHours.forEach(slot => {
-          response += `  • ${slot.start} - ${slot.end}\n`;
+          response += `• ${slot.start} - ${slot.end}\n`;
         });
       }
       
