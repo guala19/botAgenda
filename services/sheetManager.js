@@ -44,10 +44,10 @@ class SheetManager {
   async initialize() {
     try {
       const sheetsId = process.env.GOOGLE_SHEETS_ID;
-      const credentialsEnv = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+      let credentialsEnv = process.env.GOOGLE_SERVICE_ACCOUNT_JSON || process.env.GOOGLE_CREDENTIALS_B64;
 
       if (!sheetsId || !credentialsEnv) {
-        console.error('[SheetManager] ❌ Faltan variables: GOOGLE_SHEETS_ID o GOOGLE_SERVICE_ACCOUNT_JSON');
+        console.error('[SheetManager] ❌ Faltan variables: GOOGLE_SHEETS_ID o GOOGLE_SERVICE_ACCOUNT_JSON/GOOGLE_CREDENTIALS_B64');
         this.isInitialized = false;
         return;
       }
@@ -55,7 +55,13 @@ class SheetManager {
       let credentials;
 
       try {
-        // Intenta parsear como JSON (para Railway/Docker donde es un string)
+        // Si es Base64 (comienza sin { ni [), decodificar primero
+        if (credentialsEnv.includes('=') && !credentialsEnv.startsWith('{')) {
+          console.log('[SheetManager] 🔓 Decodificando credenciales desde Base64...');
+          credentialsEnv = Buffer.from(credentialsEnv, 'base64').toString('utf-8');
+        }
+        
+        // Intenta parsear como JSON
         credentials = JSON.parse(credentialsEnv);
       } catch (parseError) {
         // Si falla, intenta como ruta de archivo (para desarrollo local)

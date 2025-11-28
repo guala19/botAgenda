@@ -30,12 +30,8 @@ COPY package*.json ./
 # Instalar dependencias Node (sin dev)
 RUN npm ci --omit=dev
 
-# Copiar código fuente y credenciales
+# Copiar código fuente
 COPY . .
-
-# Establecer variable por defecto que apunta al archivo JSON dentro del contenedor
-# (Railway puede sobrescribir con su propia variable si lo requiere)
-ENV GOOGLE_SERVICE_ACCOUNT_JSON=./botagenda-478614-e2daa61b626a.json
 
 # Puerto (no usado, pero buena práctica)
 EXPOSE 3000
