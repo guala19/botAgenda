@@ -273,7 +273,7 @@ class SheetManager {
       // Crear fila con los datos (usar nombres simples sin caracteres especiales)
       const newRow = {
         Usuario: userName || 'Anónimo',
-        Teléfono: userPhone || 'N/A',
+        Teléfono: String(userPhone) || 'N/A', // Convertir a string para evitar notación científica
         'Fecha Solicitada': dateFormatted || '',
         'Hora Solicitada': timeString || '',
         'Fecha ISO': dateISO || '',
@@ -395,6 +395,68 @@ class SheetManager {
     } catch (error) {
       console.error('[SheetManager] Error cancelando reserva:', error.message);
       throw error;
+    }
+  }
+
+  /**
+   * Obtiene las horas ocupadas para un día específico de la semana
+   * @param {string} dayName - Nombre del día (lunes, martes, etc)
+   * @returns {Array} Array de objetos {start, end} con horas ocupadas
+   */
+  async getOccupiedHours(dayName) {
+    try {
+      if (!this.isInitialized) {
+        console.warn('[SheetManager] ⚠️ Sheet no inicializado, retornando array vacío');
+        return [];
+      }
+
+      await this.sheet.loadCells();
+      const rows = await this.sheet.getRows();
+      
+      const dayMap = {
+        'lunes': 1, 'martes': 2, 'miercoles': 3, 'miércoles': 3,
+        'jueves': 4, 'viernes': 5, 'sabado': 6, 'sábado': 6, 'domingo': 0
+      };
+
+      const targetDayOfWeek = dayMap[dayName.toLowerCase()];
+      if (targetDayOfWeek === undefined) {
+        return [];
+      }
+
+      const ocupiedSlots = [];
+
+      for (const row of rows) {
+        const dateStr = row.get('Fecha Solicitada') || row.get('Fecha') || '';
+        const timeStr = row.get('Hora Solicitada') || row.get('Hora') || '';
+
+        if (!dateStr || !timeStr) continue;
+
+        // Parsear fecha (formato DD/MM/YYYY)
+        const [day, month, year] = dateStr.split('/').map(Number);
+        const reservationDate = new Date(year, month - 1, day);
+
+        // Verificar si es el mismo día de la semana
+        if (reservationDate.getDay() === targetDayOfWeek) {
+          const [hour, minute] = timeStr.split(':').map(Number);
+          const startTime = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+          const endHour = hour + 1;
+          const endTime = `${String(endHour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+          
+          ocupiedSlots.push({
+            start: startTime,
+            end: endTime
+          });
+        }
+      }
+
+      // Ordenar por hora
+      ocupiedSlots.sort((a, b) => a.start.localeCompare(b.start));
+
+      console.log(`[SheetManager] Horas ocupadas para ${dayName}:`, ocupiedSlots);
+      return ocupiedSlots;
+    } catch (error) {
+      console.error('[SheetManager] Error obteniendo horas ocupadas:', error.message);
+      return [];
     }
   }
 }

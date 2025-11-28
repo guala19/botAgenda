@@ -142,6 +142,15 @@ client.on('message_create', async (msg) => {
     const fromNumber = msg.from.replace('@c.us', ''); // Limpiar formato de WhatsApp
     const isBotMentioned = messageText.toLowerCase().includes(BOT_CONFIG.botMention);
     
+    // Obtener nombre del contacto real
+    let userName = 'Usuario WhatsApp';
+    try {
+      const contact = await msg.getContact();
+      userName = contact.name || contact.pushname || 'Usuario WhatsApp';
+    } catch (e) {
+      // Si no se puede obtener, usar nombre por defecto
+    }
+    
     // Detectar si es grupo o privado (más confiable)
     const isGroupChat = msg.from.includes('@g.us'); // Los grupos terminan en @g.us
 
@@ -169,6 +178,28 @@ client.on('message_create', async (msg) => {
     }
 
     console.log(`[DEBUG] ✅ Procesando mensaje del grupo permitido...`);
+
+    // COMANDO ESPECIAL: Mostrar horario ocupado de un día
+    const horarioMatch = messageText.match(/@bot\s+horario\s+(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)/i);
+    if (horarioMatch) {
+      const dayName = horarioMatch[1].toLowerCase().replace(/á/g, 'a').replace(/é/g, 'e');
+      const ocupiedHours = await sheetManager.getOccupiedHours(dayName);
+      let response = `📅 **Horario de ${dayName.charAt(0).toUpperCase() + dayName.slice(1)}**\n\n`;
+      response += `Horario de operación: 9:00 AM - 8:00 PM\n`;
+      response += `Duración por lavada: 1 hora\n\n`;
+      
+      if (ocupiedHours.length === 0) {
+        response += `✅ **Libre**: Todos los horarios disponibles`;
+      } else {
+        response += `🔴 **Ocupado**:\n`;
+        ocupiedHours.forEach(slot => {
+          response += `  • ${slot.start} - ${slot.end}\n`;
+        });
+      }
+      
+      await msg.reply(response);
+      return;
+    }
 
     // PASO 2: Parsear fecha/hora
     const parsedDateTime = dateParser.parseMessageForDateTime(
@@ -234,31 +265,12 @@ client.on('message_create', async (msg) => {
 
     // PASO 5: Guardar en Google Sheets
     try {
-      // Obtener nombre y teléfono del usuario
-      // En grupos, getContact() es problemático, así que usar valores por defecto
-      let userName = 'Usuario WhatsApp';
-      let userPhone = fromNumber.replace(/@g\.us|@c\.us/g, '');
-      
-      // Intentar obtener contacto, pero si falla, usar defaults
-      try {
-        const contact = await msg.getContact();
-        if (contact?.name || contact?.pushname) {
-          userName = contact.name || contact.pushname;
-        }
-        if (contact?.id?.user) {
-          userPhone = contact.id.user;
-        }
-      } catch (contactError) {
-        // Si falla getContact(), simplemente usar el número limpio
-        console.log(`[DEBUG] No se pudo obtener contacto (normal en grupos), usando defaults`);
-      }
-
       const reservationData = {
         dateISO: parsedDateTime.isoDate,
         dateFormatted: parsedDateTime.dateOnlyString,
         timeString: parsedDateTime.timeString,
         userName: userName,
-        userPhone: userPhone
+        userPhone: fromNumber
       };
 
       console.log(`[DEBUG] Guardando reserva:`, reservationData);
