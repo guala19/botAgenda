@@ -23,13 +23,13 @@ class SheetManager {
   /**
    * Inicializa la conexión con Google Sheets
    * 
-   * IMPORTANTE: Usa variables de entorno para credentials:
+   * IMPORTANTE: Usa variables de entorno para credentials (NUNCA archivos en repo):
    * - GOOGLE_SHEETS_ID: ID de la hoja (de la URL)
-   * - GOOGLE_SERVICE_ACCOUNT_JSON: Ruta al archivo JSON de credenciales
+   * - GOOGLE_SERVICE_ACCOUNT_JSON: Contenido JSON como string (para Railway/Docker)
+   *   O ruta al archivo JSON (para desarrollo local)
    * 
-   * El archivo JSON debe tener estructura estándar de Google Service Account:
-   * {
-   *   "type": "service_account",
+   * El JSON debe tener estructura estándar de Google Service Account:
+   * {\n   *   "type": "service_account",
    *   "project_id": "...",
    *   "private_key_id": "...",
    *   "private_key": "...",
@@ -44,23 +44,29 @@ class SheetManager {
   async initialize() {
     try {
       const sheetsId = process.env.GOOGLE_SHEETS_ID;
-      const credentialsPath = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+      const credentialsEnv = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
 
-      if (!sheetsId || !credentialsPath) {
+      if (!sheetsId || !credentialsEnv) {
         console.error('[SheetManager] ❌ Faltan variables: GOOGLE_SHEETS_ID o GOOGLE_SERVICE_ACCOUNT_JSON');
         this.isInitialized = false;
         return;
       }
 
-      // Leer el archivo JSON de credenciales
-      const credentialsFile = path.resolve(credentialsPath);
-      if (!fs.existsSync(credentialsFile)) {
-        console.error(`[SheetManager] ❌ Archivo no encontrado: ${credentialsFile}`);
-        this.isInitialized = false;
-        return;
-      }
+      let credentials;
 
-      const credentials = JSON.parse(fs.readFileSync(credentialsFile, 'utf8'));
+      try {
+        // Intenta parsear como JSON (para Railway/Docker donde es un string)
+        credentials = JSON.parse(credentialsEnv);
+      } catch (parseError) {
+        // Si falla, intenta como ruta de archivo (para desarrollo local)
+        const credentialsFile = path.resolve(credentialsEnv);
+        if (!fs.existsSync(credentialsFile)) {
+          console.error(`[SheetManager] ❌ Archivo no encontrado: ${credentialsFile}`);
+          this.isInitialized = false;
+          return;
+        }
+        credentials = JSON.parse(fs.readFileSync(credentialsFile, 'utf8'));
+      }
 
       // Crear instancia de JWT para autenticación usando las credenciales del JSON
       const auth = new JWT({
