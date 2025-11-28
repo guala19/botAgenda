@@ -179,7 +179,7 @@ client.on('message_create', async (msg) => {
     }
 
     const allowedGroupName = process.env.ALLOWED_GROUP_NAME || 'botTest';
-    const isAllowedGroup = groupName.toLowerCase().includes(allowedGroupName.toLowerCase());
+    const isAllowedGroup = groupName.toLowerCase() === allowedGroupName.toLowerCase();
 
     console.log(`[DEBUG] Mensaje recibido: "${messageText}" | Grupo: ${isGroupChat} (${groupName}) | @lavanderia: ${isBotMentioned} | Permitido: ${isAllowedGroup}`);
 
