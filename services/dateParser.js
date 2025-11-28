@@ -342,11 +342,98 @@ function parseMessageForDateTime(messageText, botMention = '@lavanderia') {
   }
 }
 
+/**
+ * Normaliza un día de semana (tolera acentos, plurales, variaciones)
+ * Ejemplo: "viernes" -> "viernes", "Viernés" -> "viernes", "viernesS" -> "viernes"
+ * 
+ * @param {string} dayInput - Día a normalizar
+ * @returns {string|null} - Día normalizado o null si no es válido
+ */
+function normalizeDayName(dayInput) {
+  if (!dayInput || typeof dayInput !== 'string') {
+    return null;
+  }
+
+  // Remover acentos, convertir a minúsculas, remover espacios
+  let normalized = dayInput
+    .toLowerCase()
+    .trim()
+    .replace(/á/g, 'a')
+    .replace(/é/g, 'e')
+    .replace(/í/g, 'i')
+    .replace(/ó/g, 'o')
+    .replace(/ú/g, 'u')
+    .replace(/s$/, ''); // Remover 's' final (plurales)
+
+  // Map de días válidos
+  const validDays = {
+    'lunes': 'lunes',
+    'martes': 'martes',
+    'miercoles': 'miercoles',
+    'jueves': 'jueves',
+    'viernes': 'viernes',
+    'sabado': 'sabado',
+    'domingo': 'domingo'
+  };
+
+  return validDays[normalized] || null;
+}
+
+/**
+ * Convierte "hoy" o "mañana" a nombre del día de semana actual/siguiente
+ * 
+ * @param {string} input - "hoy" o "mañana" (o variantes)
+ * @returns {string|null} - Nombre del día (ej: "viernes") o null si no es válido
+ */
+function convertRelativeDayToName(input) {
+  if (!input || typeof input !== 'string') {
+    return null;
+  }
+
+  const normalized = input.toLowerCase().trim().replace(/á/g, 'a').replace(/n/g, 'n');
+  
+  const daysOfWeek = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+  
+  if (normalized === 'hoy') {
+    const today = new Date();
+    return daysOfWeek[today.getDay()];
+  } else if (normalized === 'manana' || normalized === 'mañana') {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return daysOfWeek[tomorrow.getDay()];
+  }
+
+  return null;
+}
+
+/**
+ * Convierte entrada de usuario a nombre de día válido
+ * Maneja: "viernes", "hoy", "mañana", "manana", plurales, acentos, etc
+ * 
+ * @param {string} dayInput - Entrada del usuario
+ * @returns {string|null} - Nombre del día normalizado o null
+ */
+function resolveDayName(dayInput) {
+  if (!dayInput) return null;
+
+  // Primero intentar como día relativo (hoy/mañana)
+  const relativeDay = convertRelativeDayToName(dayInput);
+  if (relativeDay) {
+    return relativeDay;
+  }
+
+  // Si no, normalizar como día de semana absoluto
+  return normalizeDayName(dayInput);
+}
+
 module.exports = {
   parseMessageForDateTime,
   cleanMessage,
   formatDateToSpanish,
   formatTimeOnly,
   formatDateOnly,
-  formatDateISO
+  formatDateISO,
+  normalizeDayName,
+  convertRelativeDayToName,
+  resolveDayName
 };

@@ -192,21 +192,61 @@ client.on('message_create', async (msg) => {
 
     console.log(`[DEBUG] ✅ Procesando mensaje del grupo permitido...`);
 
-    // COMANDO ESPECIAL: Mostrar horario ocupado de un día
-    const horarioMatch = messageText.match(/@lavanderia\s+horario\s+(lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)/i);
+    // COMANDO ESPECIAL: #horario - Mostrar disponibilidad de un día
+    // Ejemplos: "@lavanderia #horario viernes", "@lavanderia #horario hoy", "@lavanderia #horario mañana"
+    const horarioMatch = messageText.match(/@lavanderia\s+#horario\s+(\S+)/i);
     if (horarioMatch) {
-      const dayName = horarioMatch[1].toLowerCase().replace(/á/g, 'a').replace(/é/g, 'e');
-      const ocupiedHours = await sheetManager.getOccupiedHours(dayName);
-      let response = `📅 **${dayName.charAt(0).toUpperCase() + dayName.slice(1)}**\n\n`;
+      const dayInput = horarioMatch[1];
+      const resolvedDay = dateParser.resolveDayName(dayInput);
       
-      if (ocupiedHours.length === 0) {
-        response += `✅ Todo disponible`;
-      } else {
-        response += `🔴 Ocupado:\n`;
-        ocupiedHours.forEach(slot => {
-          response += `• ${slot.start} - ${slot.end}\n`;
+      if (!resolvedDay) {
+        const validDays = 'lunes, martes, miércoles, jueves, viernes, sábado, domingo, hoy, mañana';
+        await msg.reply(
+          `❌ Día no válido: "${dayInput}"\n\n` +
+          `Usa alguno de estos:\n` +
+          `${validDays}`
+        );
+        return;
+      }
+
+      // Obtener horarios para ese día
+      const schedule = await sheetManager.getScheduleByDay(resolvedDay);
+      
+      // Formatear nombre del día
+      const dayNames = {
+        'lunes': 'Lunes',
+        'martes': 'Martes',
+        'miercoles': 'Miércoles',
+        'jueves': 'Jueves',
+        'viernes': 'Viernes',
+        'sabado': 'Sábado',
+        'domingo': 'Domingo'
+      };
+      
+      const displayName = dayNames[resolvedDay] || resolvedDay;
+      let response = `📅 **${displayName}**\n\n`;
+      
+      // Mostrar disponibles
+      if (schedule.available && schedule.available.length > 0) {
+        response += `🟢 **Disponible:**\n`;
+        schedule.available.forEach(slot => {
+          response += `  • ${slot.start} - ${slot.end}\n`;
         });
       }
+      
+      // Mostrar ocupados
+      if (schedule.occupied && schedule.occupied.length > 0) {
+        response += `\n🔴 **Ocupado:**\n`;
+        schedule.occupied.forEach(slot => {
+          response += `  • ${slot.start} - ${slot.end}\n`;
+        });
+      }
+      
+      if (schedule.available.length === 0 && schedule.occupied.length === 0) {
+        response += `✅ Sin datos - todos los horarios disponibles`;
+      }
+      
+      response += `\n⏰ Horarios: 9:00 AM - 8:00 PM`;
       
       await msg.reply(response);
       return;
@@ -225,13 +265,14 @@ client.on('message_create', async (msg) => {
       console.log(`[DEBUG] No se pudo parsear fecha/hora`);
       await msg.reply(
         `🤔 No entendí ese formato.\n\n` +
-        `Usa alguno de estos:\n\n` +
-        `• @lavanderia mañana 3pm\n` +
-        `• @lavanderia viernes 5pm - Juan\n` +
-        `• @lavanderia 22 3pm\n` +
-        `• @lavanderia nov 22 3pm\n` +
-        `• @lavanderia 2025-11-22 15:00\n\n` +
-        `Opcional: agrega tu nombre con " - Nombre" al final`
+        `**RESERVAR:**\n` +
+        `• @lavanderia mañana 3pm - Juan\n` +
+        `• @lavanderia viernes 5pm - María\n` +
+        `• @lavanderia 22 3pm - Pedro\n\n` +
+        `**VER DISPONIBILIDAD:**\n` +
+        `• @lavanderia #horario viernes\n` +
+        `• @lavanderia #horario hoy\n` +
+        `• @lavanderia #horario mañana`
       );
       return;
     }

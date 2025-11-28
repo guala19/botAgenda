@@ -397,17 +397,20 @@ class SheetManager {
       throw error;
     }
   }
-
   /**
-   * Obtiene las horas ocupadas para un día específico de la semana
-   * @param {string} dayName - Nombre del día (lunes, martes, etc)
-   * @returns {Array} Array de objetos {start, end} con horas ocupadas
+   * Obtiene información completa de disponibilidad para un día
+   * @param {string} dayName - Nombre del día normalizado (lunes, martes, etc)
+   * @returns {Object} { occupied: [{start, end}], available: [{start, end}], dayName: string }
    */
-  async getOccupiedHours(dayName) {
+  async getScheduleByDay(dayName) {
     try {
       if (!this.isInitialized) {
-        console.warn('[SheetManager] ⚠️ Sheet no inicializado, retornando array vacío');
-        return [];
+        console.warn('[SheetManager] ⚠️ Sheet no inicializado, retornando horario vacío');
+        return {
+          occupied: [],
+          available: this._getDefaultAvailableSlots(),
+          dayName: dayName
+        };
       }
 
       await this.sheet.loadCells();
@@ -420,10 +423,15 @@ class SheetManager {
 
       const targetDayOfWeek = dayMap[dayName.toLowerCase()];
       if (targetDayOfWeek === undefined) {
-        return [];
+        return {
+          occupied: [],
+          available: [],
+          dayName: dayName,
+          error: 'Día inválido'
+        };
       }
 
-      const ocupiedSlots = [];
+      const occupiedSlots = [];
 
       for (const row of rows) {
         const dateStr = row.get('Fecha Solicitada') || row.get('Fecha') || '';
@@ -442,7 +450,7 @@ class SheetManager {
           const endHour = hour + 1;
           const endTime = `${String(endHour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
           
-          ocupiedSlots.push({
+          occupiedSlots.push({
             start: startTime,
             end: endTime
           });
@@ -450,15 +458,80 @@ class SheetManager {
       }
 
       // Ordenar por hora
-      ocupiedSlots.sort((a, b) => a.start.localeCompare(b.start));
+      occupiedSlots.sort((a, b) => a.start.localeCompare(b.start));
 
-      console.log(`[SheetManager] Horas ocupadas para ${dayName}:`, ocupiedSlots);
-      return ocupiedSlots;
+      // Calcular horarios disponibles
+      const availableSlots = this._calculateAvailableSlots(occupiedSlots);
+
+      console.log(`[SheetManager] Horario para ${dayName}:`, { occupied: occupiedSlots, available: availableSlots });
+
+      return {
+        occupied: occupiedSlots,
+        available: availableSlots,
+        dayName: dayName
+      };
     } catch (error) {
-      console.error('[SheetManager] Error obteniendo horas ocupadas:', error.message);
-      return [];
+      console.error('[SheetManager] Error obteniendo horarios:', error.message);
+      return {
+        occupied: [],
+        available: this._getDefaultAvailableSlots(),
+        dayName: dayName,
+        error: error.message
+      };
     }
   }
+
+  /**
+   * Calcula los slots disponibles entre las horas ocupadas
+   * Horario de operación: 09:00 - 20:00 (9 AM - 8 PM)
+   * 
+   * @param {Array} occupiedSlots - Array de {start, end} ocupados
+   * @returns {Array} Array de {start, end} disponibles
+   */
+  _calculateAvailableSlots(occupiedSlots) {
+    const START_HOUR = 9; // 9 AM
+    const END_HOUR = 20;  // 8 PM
+    const available = [];
+
+    // Crear todos los slots de 1 hora en el día
+    const allSlots = [];
+    for (let hour = START_HOUR; hour < END_HOUR; hour++) {
+      const start = `${String(hour).padStart(2, '0')}:00`;
+      const end = `${String(hour + 1).padStart(2, '0')}:00`;
+      allSlots.push({ start, end });
+    }
+
+    // Filtrar los no ocupados
+    return allSlots.filter(slot => {
+      return !occupiedSlots.some(occupied => 
+        occupied.start === slot.start && occupied.end === slot.end
+      );
+    });
+  }
+
+  /**
+   * Retorna los slots por defecto cuando no hay datos
+   */
+  _getDefaultAvailableSlots() {
+    const slots = [];
+    for (let hour = 9; hour < 20; hour++) {
+      const start = `${String(hour).padStart(2, '0')}:00`;
+      const end = `${String(hour + 1).padStart(2, '0')}:00`;
+      slots.push({ start, end });
+    }
+    return slots;
+  }
+
+  /**
+   * (Deprecated - usar getScheduleByDay) Obtiene las horas ocupadas para un día específico de la semana
+   * @param {string} dayName - Nombre del día (lunes, martes, etc)
+   * @returns {Array} Array de objetos {start, end} con horas ocupadas
+   */
+  async getOccupiedHours(dayName) {
+    const schedule = await this.getScheduleByDay(dayName);
+    return schedule.occupied;
+  }
+
 }
 
 module.exports = new SheetManager();
