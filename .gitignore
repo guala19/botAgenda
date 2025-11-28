@@ -31,6 +31,9 @@ botagenda-*.json
 .wwebjs_cache/
 .wwebjs_logs/
 
+# QR Code (generated at runtime)
+qr.png
+
 # OS
 .DS_Store
 .DS_Store?

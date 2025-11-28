@@ -129,6 +129,44 @@ Esto asegura que Railway instale todas las librerías necesarias para Puppeteer.
 
 Si ves errores de credenciales, revisa que `GOOGLE_SERVICE_ACCOUNT_JSON` esté completo.
 
+## 📱 Paso 4: Autenticar el Bot (Primer Deploy)
+
+### Problema: QR no visible en Railway
+
+En Railway no puedes ver terminal interactivo. Por eso el bot guarda el QR como archivo `qr.png`.
+
+### Solución: Obtener el QR
+
+1. **En Railway Dashboard:**
+   - Ve a tu proyecto
+   - Click en **"Logs"** (tab)
+   - Busca el mensaje: `✅ QR guardado en: /app/qr.png`
+
+2. **Descargar el archivo QR:**
+   - En los logs de Railway, busca el archivo `qr.png`
+   - Haz click para descargarlo o ver la URL pública
+   - Alternativamente, Railway puede mostrarlo en los archivos generados
+
+3. **Escanear el QR:**
+   - Abre WhatsApp en tu teléfono
+   - Linked Devices (dispositivos vinculados)
+   - Nuevo dispositivo
+   - Escanea el QR descargado
+
+4. **Una vez autenticado:**
+   - Railway guardará la sesión en `.wwebjs_auth/`
+   - Los siguientes redeployments NO necesitarán nuevo QR
+   - El bot se reconectará automáticamente
+
+### Si algo falla:
+
+```
+Si el QR no aparece en los logs:
+- Espera 2-3 minutos para que se genere
+- Revisa que NODE_ENV=production en Railway
+- Intenta Force Redeploy
+```
+
 ## 📱 Paso 4: Probar el Bot
 
 1. Agrega el número del bot a un grupo WhatsApp
