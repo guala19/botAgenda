@@ -131,44 +131,39 @@ Si ves errores de credenciales, revisa que `GOOGLE_SERVICE_ACCOUNT_JSON` esté c
 
 ## 📱 Paso 4: Autenticar el Bot (Primer Deploy)
 
-### ✅ El proceso es muy simple ahora:
+### ✨ **SUPER SIMPLE - 3 PASOS:**
 
-1. **En Railway Dashboard:**
-   - Ve a tu proyecto
-   - Click en **"Logs"** (tab)
-   - El bot mostrará el QR en **ASCII** directamente en los logs
-
-2. **El QR aparecerá así en los logs:**
+1. **En Railway → Logs**, verás un mensaje así:
    ```
-   ======================================================================
-   📱 CÓDIGO QR - ESCANEA CON TU TELÉFONO
-   ======================================================================
+   📱 CÓDIGO QR PARA ESCANEAR
    
-   🔐 Abre WhatsApp en tu teléfono y ve a:
-      Menú → Dispositivos vinculados → Nuevo dispositivo
+   🔐 OPCIÓN 1: Abre este link en tu navegador (más fácil):
    
-   📸 Escanea este código QR:
+   👉 https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=...
    
-   [QR CODE EN ASCII]
-   
-   ======================================================================
+   Luego escanea el QR que ves en pantalla con tu teléfono
    ```
 
-3. **Escanea el QR directamente desde los logs:**
-   - Abre WhatsApp en tu teléfono
+2. **Haz click en el link** (o cópialo y pégalo en tu navegador)
+   - Se abre una página con el QR **limpio y escaneable**
+
+3. **Abre WhatsApp en tu teléfono y:**
    - Menú → Dispositivos vinculados
    - Nuevo dispositivo
-   - Apunta la cámara a la pantalla (donde ves los logs)
-   - ¡Listo! Se conecta en 2-3 segundos
-
-4. **Una vez autenticado:**
-   - La sesión se guarda automáticamente
-   - Los siguientes redeployments NO necesitan nuevo QR
-   - El bot se reconecta automáticamente
+   - Escanea el QR que ves en la página
 
 ---
 
-**¡Mucho más fácil!** ✨ Sin descargas, sin links, directo desde los logs.
+**¡Listo! En 2-3 segundos estará conectado.** ✅
+
+### Una vez autenticado:
+- La sesión se guarda automáticamente
+- Próximos redeployments: NO necesita nuevo QR
+- El bot se reconecta automáticamente
+
+---
+
+**Mucho mejor que antes:** Es un QR perfecto y escaneable sin problemas. 📱
 
 ## 📱 Paso 4: Probar el Bot
 

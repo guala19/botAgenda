@@ -57,19 +57,26 @@ const client = new Client({
 
 /**
  * Evento: QR generado (primera inicialización)
- * Muestra QR en ASCII en los logs para que sea fácil de escanear desde Railway
+ * Muestra un link que puedes abrir en navegador para ver el QR limpio y escaneable
  */
 client.on('qr', (qr) => {
-  console.log('\n' + '='.repeat(70));
-  console.log('📱 CÓDIGO QR - ESCANEA CON TU TELÉFONO');
-  console.log('='.repeat(70));
-  console.log('\n🔐 Abre WhatsApp en tu teléfono y ve a:');
-  console.log('   Menú → Dispositivos vinculados → Nuevo dispositivo');
-  console.log('\n📸 Escanea este código QR:\n');
+  // Generar URL del QR usando servicio público (qr-server)
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
+  
+  console.log('\n' + '='.repeat(80));
+  console.log('📱 CÓDIGO QR PARA ESCANEAR');
+  console.log('='.repeat(80));
+  console.log('\n🔐 OPCIÓN 1: Abre este link en tu navegador (más fácil):\n');
+  console.log(`   👉 ${qrImageUrl}\n`);
+  console.log('   Luego escanea el QR que ves en pantalla con tu teléfono\n');
+  console.log('─'.repeat(80));
+  console.log('\n🔐 OPCIÓN 2: Si prefieres usar la terminal:\n');
+  console.log('   Menú WhatsApp → Dispositivos vinculados → Nuevo dispositivo');
+  console.log('   Escanea este código:\n');
   qrcode.generate(qr, { small: true });
-  console.log('\n' + '='.repeat(70));
-  console.log('⏱️  Si no funciona, actualiza la página en Railway después de 30 segundos');
-  console.log('='.repeat(70) + '\n');
+  console.log('─'.repeat(80));
+  console.log('\n⏱️  Tienes 2 minutos para escanear antes de que expira\n');
+  console.log('='.repeat(80) + '\n');
 });
 
 /**
